@@ -7,3 +7,4 @@ require("./glitch");
 require("./godrays");
 require("./ssao");
 require("./lighty");
+require("./dof");
