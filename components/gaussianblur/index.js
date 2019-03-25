@@ -1,36 +1,41 @@
 // Simple directional gausian blur.
 
 AFRAME.registerComponent("blur", {
+  schema: {
+    size: { value: 1.0 },
+    direction: { type: "vec2", value: new THREE.Vector2(1.0, 0.0) }
+  },
 
-    schema: {
-		size: { value: 1.0 },
-		direction: { type: "vec2", value:new THREE.Vector2(1.0, 0.0) }
-    },
+  init: function() {
+    console.log("**** Component blur Initialised");
 
-    init: function () {
-        this.system = this.el.sceneEl.systems.effects;
-        this.uniforms.uResolution.value.set(this.el.canvas.width, this.el.canvas.width);
-        this.update(this.data);
-		this.system.register(this);
-    },
+    this.system = this.el.sceneEl.systems.effects;
+    this.uniforms.uResolution.value.set(
+      this.el.canvas.width,
+      this.el.canvas.width
+    );
+    this.update(this.data);
+    this.system.register(this);
+  },
 
-    update: function(data) {
-    	for (var key in data){
-			this.uniforms[key].value = data[key];
-		}
-	},
+  update: function(data) {
+    for (var key in data) {
+      this.uniforms[key].value = data[key];
+    }
+  },
 
-	remove: function () {
-		this.system.unregister(this);
-	},
+  remove: function() {
+    this.system.unregister(this);
+  },
 
-	uniforms: {
-		size: { type: "f", value: 1.0 },
-		uResolution: { type: "v2", value: new THREE.Vector2() },
-		direction: { type: "v2", value:new THREE.Vector2(1.0, 0.0) }
-	},
+  uniforms: {
+    size: { type: "f", value: 0.0 },
+    uResolution: { type: "v2", value: new THREE.Vector2() },
+    direction: { type: "v2", value: new THREE.Vector2(1.0, 0.0) }
+  },
 
-	fragment:"\
+  fragment:
+    "\
 		vec4 blur( vec2 uv, float size, vec2 direction) {\n\
 			vec4 color = vec4(0.0);\n\
 			vec2 off1 = vec2(1.411764705882353) * direction;\n\
@@ -49,5 +54,4 @@ AFRAME.registerComponent("blur", {
 			float size = $size/float($uResolution[1]);\n\
 			color = blur( uv, size, $direction);\n\
 		}"
-
 });

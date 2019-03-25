@@ -8,3 +8,5 @@ require("./godrays");
 require("./ssao");
 require("./lighty");
 require("./gaussianblur");
+
+require("./dof");
