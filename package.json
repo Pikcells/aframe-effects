@@ -9,7 +9,18 @@
   },
   "scripts": {
     "dist": "webpack index.js dist/aframe-effects.js && uglifyjs dist/aframe-effects.js -o dist/aframe-effects.min.js --source-map dist/afrane-effects.min.js.map",
+    "watch": "npm-watch",
     "server": "ws"
+  },
+  "watch": {
+    "dist": {
+      "patterns": [
+        "components",
+        "lib",
+        "shaders"
+      ],
+      "extensions": ".less, .js"
+    }
   },
   "repository": {
     "type": "git",
@@ -55,8 +66,11 @@
   },
   "homepage": "https://github.com/wizgrav/aframe-effects#readme",
   "devDependencies": {
-    "webpack": "^1.13.0",
+    "local-web-server": "^2.6.0",
+    "npm-watch": "^0.6.0",
     "uglifyjs": "^2.4.10",
-    "local-web-server": "^2.6.0"
-  }
+    "watch": "^1.0.2",
+    "webpack": "^1.13.0"
+  },
+  "dependencies": {}
 }
