@@ -32,14 +32,14 @@ AFRAME.registerComponent("dof", {
     UNIFORMS.aperture.value = this.aperture;
     UNIFORMS.focus.value = this.focus;
 
-    console.log(
-      "maxblur: " +
-        this.maxblur +
-        " aperture: " +
-        this.aperture +
-        " focus: " +
-        this.focus
-    );
+    // console.log(
+    //   "maxblur: " +
+    //     this.maxblur +
+    //     " aperture: " +
+    //     this.aperture +
+    //     " focus: " +
+    //     this.focus
+    // );
   },
   // END DEV
 
