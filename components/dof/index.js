@@ -1,8 +1,8 @@
 AFRAME.registerComponent("dof", {
   schema: {
-    maxblur: { default: 1.0 }, // Max blur amount
-    aperture: { default: 0.025 }, // Aperture - bigger values for shallower depth of field
-    focus: { default: 0.75 } // Focus 0.0 to 1.0 depth into scene
+    maxblur: { default: 0.5 }, // Max blur amount
+    aperture: { default: 0.05 }, // Aperture - bigger values for shallower depth of field
+    focus: { default: 0.85 } // Focus 0.0 to 1.0 depth into scene
   },
 
   init: function() {
@@ -13,9 +13,9 @@ AFRAME.registerComponent("dof", {
     this.system.register(this);
 
     // DEV
-    this.maxblur = 0.0;
-    this.aperture = 0.0;
-    this.focus = 0.0;
+    this.maxblur = 0.5;
+    this.aperture = 0.05;
+    this.focus = 0.85;
 
     var gui = new dat.GUI();
     gui.add(this, "maxblur", 0.0, 1.0);
