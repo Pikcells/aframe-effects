@@ -5,21 +5,32 @@ AFRAME.registerComponent("dof", {
     this.system = this.el.sceneEl.systems.effects;
 
     this.needsResize = true;
-
     this.system.register(this);
   },
 
   tick: function() {
+    // console.log("dof Tick");
     // this.bypass = !this.data;
   },
 
-  setSize: function(w, h) {
-    console.log("setSize " + w + " " + h);
-    this.material.uniforms.resolution.value.set(w, h);
-    this.material.uniforms.aspect.value.set(w / h);
+  tock: function() {
+    // console.log("dof Tock");
   },
 
-  resize: true,
+  update: function(oldData) {
+    console.log("Update");
+  },
+
+  setSize: function(width, height) {
+    console.log("dof setSize " + width + " " + height);
+
+    var UNIFORMS = this.material.uniforms;
+
+    UNIFORMS.resolution.value.set(width, height);
+    UNIFORMS.aspect.value.set(width / height);
+  },
+
+  // resize: true,
   diffuse: true,
   depth: true,
 
@@ -30,9 +41,9 @@ AFRAME.registerComponent("dof", {
     aperture: { type: "f", value: 0.025 }, // aperture - bigger values for shallower depth of field
 
     nearClip: { type: "f", value: 0.0 },
-    farClip: { type: "f", value: 1.0 },
+    farClip: { type: "f", value: -10.0 },
 
-    focus: { type: "f", value: 1.0 },
+    focus: { type: "f", value: 0.65 },
     aspect: { type: "f", value: 1.0 }
 
     // "uniform float maxblur;", // max blur amount
@@ -99,10 +110,13 @@ AFRAME.registerComponent("dof", {
 
     "void $main(inout vec4 color, vec4 origColor, vec2 uv, float depth) {",
 
-    "vec2 aspectcorrect = vec2( 1.0, dof_aspect );",
+    "float aspect = resolution.y / resolution.x;",
 
-    // "float viewZ = getViewZ( getDepth( vUv ) );",
-    "float viewZ = getDepth( vUv );",
+    // "vec2 aspectcorrect = vec2( 1.0, dof_aspect );",
+    "vec2 aspectcorrect = vec2( 1.0, aspect );",
+
+    // "float viewZ = getViewZ( getDepth( vUv ) );", // Original
+    "float viewZ = - getDepth( vUv );",
 
     "float factor = ( dof_focus + viewZ );", // viewZ is <= 0, so this is a difference equation
 
@@ -169,8 +183,12 @@ AFRAME.registerComponent("dof", {
     // DEV
     "// color = vec4(1.0, 0.0, 0.0, 1.0); // Render Test - Red",
     "// color = vec4(dof_aspect, 0.0, 0.0, 1.0); // Aspect",
-    "// color = vec4(getDepth( vUv ), 0.0, 0.0, 1.0); // Depth unfiltered",
-    "// color = vec4(viewZ, 0.0, 0.0, 1.0);",
+    "// color = vec4(dof_nearClip, dof_farClip, 0.0, 1.0); // Clip",
+
+    "// color = vec4(texture2D( tDepth, vUv ).xyz, 1.0); // Depth Texture",
+    "// color = vec4(getDepth( vUv ), 0.0, 0.0, 1.0); // Depth #1",
+    "// color = vec4(viewZ, 0.0, 0.0, 1.0); // Depth #2",
+    "// color = vec4(aspect, 0.0, 0.0, 1.0); // Aspect",
 
     "}"
   ].join("\n")
