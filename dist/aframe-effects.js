@@ -1116,53 +1116,55 @@
 	// Ported from the standard shader in Three.js examples
 
 	AFRAME.registerComponent("film", {
-	    multiple: true,
+	  multiple: true,
 
-	    schema: {
-	        "speed":       { default: 1.0 },
-	        "nIntensity": { default: 0.5 },
-	        "sIntensity": { default: 0.05 },
-	        "sCount":     { default: 4096 }
-		},
+	  schema: {
+	    speed: { default: 1.0 },
+	    nIntensity: { default: 0.5 },
+	    sIntensity: { default: 0.05 },
+	    sCount: { default: 4096 }
+	  },
 
-	    init: function () {
-	        this.uniforms = {
-	            "speed":       { type: "f", value: 0.0 },
-	            "nIntensity": { type: "f", value: 0.5 },
-	            "sIntensity": { type: "f", value: 0.05 },
-	            "sCount":     { type: "f", value: 4096 }
-		    };
-	        this.system = this.el.sceneEl.systems.effects;
-	        this.system.register(this);
-	    },
+	  init: function() {
+	    this.uniforms = {
+	      speed: { type: "f", value: 0.0 },
+	      nIntensity: { type: "f", value: 0.5 },
+	      sIntensity: { type: "f", value: 0.05 },
+	      sCount: { type: "f", value: 4096 }
+	    };
+	    this.system = this.el.sceneEl.systems.effects;
+	    this.system.register(this);
+	  },
 
-	    update: function () {
-	        var d = this.data, us =  this.uniforms;
-	        for(var u in us) {
-	            if(d[u]) us[u].value = d[u]; 
-	        }
-	    },
+	  update: function() {
+	    var d = this.data,
+	      us = this.uniforms;
+	    for (var u in us) {
+	      if (d[u]) us[u].value = d[u];
+	    }
+	  },
 
-	    remove: function () {
-	        this.system.unregister(this);
-	    },
+	  remove: function() {
+	    this.system.unregister(this);
+	  },
 
-	    includes: ["common"],
+	  includes: ["common"],
 
-	    diffuse: true,
+	  diffuse: true,
 
-	    fragment: [
-			"void $main(inout vec4 color, vec4 origColor, vec2 uv, float depth) {",
-			"   vec4 cTextureScreen = color;",
-			"   float dx = rand( uv + mod(time, 3.14) * $speed );",
-			"   vec3 cResult = cTextureScreen.rgb + cTextureScreen.rgb * clamp( 0.1 + dx, 0.0, 1.0 );",
-			"   vec2 sc = vec2( sin( uv.y * $sCount ), cos( uv.y * $sCount ) );",
-			"   cResult += cTextureScreen.rgb * vec3( sc.x, sc.y, sc.x ) * $sIntensity;",
-	        "   cResult = cTextureScreen.rgb + clamp( $nIntensity, 0.0,1.0 ) * ( cResult - cTextureScreen.rgb );",
-			"   color.rgb =  cResult; //cResult;",
-			"}"
-		].join( "\n" )
+	  fragment: [
+	    "void $main(inout vec4 color, vec4 origColor, vec2 uv, float depth) {",
+	    "   vec4 cTextureScreen = color;",
+	    "   float dx = rand( uv + mod(time, 3.14) * $speed );",
+	    "   vec3 cResult = cTextureScreen.rgb + cTextureScreen.rgb * clamp( 0.1 + dx, 0.0, 1.0 );",
+	    "   vec2 sc = vec2( sin( uv.y * $sCount ), cos( uv.y * $sCount ) );",
+	    "   cResult += cTextureScreen.rgb * vec3( sc.x, sc.y, sc.x ) * $sIntensity;",
+	    "   cResult = cTextureScreen.rgb + clamp( $nIntensity, 0.0,1.0 ) * ( cResult - cTextureScreen.rgb );",
+	    "   color.rgb =  cResult; //cResult;",
+	    "}"
+	  ].join("\n")
 	});
+
 
 /***/ }),
 /* 6 */
@@ -2742,64 +2744,68 @@
 /***/ (function(module, exports) {
 
 	AFRAME.registerComponent("dof", {
-	  schema: {},
+	  schema: {
+	    maxblur: { default: 1.0 }, // Max blur amount
+	    aperture: { default: 0.025 }, // Aperture - bigger values for shallower depth of field
+	    focus: { default: 0.75 } // Focus 0.0 to 1.0 depth into scene
+	  },
 
 	  init: function() {
+	    // Effect
 	    this.system = this.el.sceneEl.systems.effects;
 
 	    this.needsResize = true;
 	    this.system.register(this);
+
+	    // DEV
+	    this.maxblur = 0.0;
+	    this.aperture = 0.0;
+	    this.focus = 0.0;
+
+	    var gui = new dat.GUI();
+	    gui.add(this, "maxblur", 0.0, 1.0);
+	    gui.add(this, "aperture", 0.0, 1.0);
+	    gui.add(this, "focus", 0.0, 1.0);
+	    // END DEV
 	  },
 
+	  // DEV
 	  tick: function() {
-	    // console.log("dof Tick");
-	    // this.bypass = !this.data;
+	    var UNIFORMS = this.uniforms;
+
+	    UNIFORMS.maxblur.value = this.maxblur;
+	    UNIFORMS.aperture.value = this.aperture;
+	    UNIFORMS.focus.value = this.focus;
+
+	    console.log(
+	      "maxblur: " +
+	        this.maxblur +
+	        " aperture: " +
+	        this.aperture +
+	        " focus: " +
+	        this.focus
+	    );
 	  },
+	  // END DEV
 
-	  tock: function() {
-	    // console.log("dof Tock");
-	  },
-
-	  update: function(oldData) {
-	    console.log("Update");
-	  },
-
-	  setSize: function(width, height) {
-	    console.log("dof setSize " + width + " " + height);
-
-	    var UNIFORMS = this.material.uniforms;
-
-	    UNIFORMS.resolution.value.set(width, height);
-	    UNIFORMS.aspect.value.set(width / height);
-	  },
-
-	  // resize: true,
 	  diffuse: true,
 	  depth: true,
 
-	  // Camera near/far range is 0.0 to 1.0
-	  // 0.8 to 1.0 is most of the visible range
 	  uniforms: {
-	    maxblur: { type: "f", value: 1.0 }, // max blur amount
-	    aperture: { type: "f", value: 0.025 }, // aperture - bigger values for shallower depth of field
+	    maxblur: { type: "f", value: 0.0 },
+	    aperture: { type: "f", value: 0.0 },
+	    focus: { type: "f", value: 0.0 },
 
 	    nearClip: { type: "f", value: 0.0 },
-	    farClip: { type: "f", value: -10.0 },
+	    farClip: { type: "f", value: -10.0 }
+	  },
 
-	    focus: { type: "f", value: 0.65 },
-	    aspect: { type: "f", value: 1.0 }
+	  update: function() {
+	    var UNIFORMS = this.uniforms;
 
-	    // "uniform float maxblur;", // max blur amount
-	    // "uniform float aperture;", // aperture - bigger values for shallower depth of field
-
-	    // "uniform float nearClip;",
-	    // "uniform float farClip;",
-
-	    // "uniform float focus;",
-	    // "uniform float aspect;",
-
-	    // uBlurNear: { type: "f", value: 0.8 },
-	    // uBlurRange: { type: "f", value: 0.1 }
+	    UNIFORMS.maxblur.value = this.data.maxblur;
+	    UNIFORMS.aperture.value = this.data.aperture;
+	    UNIFORMS.focus.value = this.data.focus;
 	  },
 
 	  remove: function() {
@@ -2818,22 +2824,9 @@
 
 	  fragment: [
 	    "#include <common>",
-
-	    // "varying vec2 vUv;",
+	    "#include <packing>",
 
 	    "uniform sampler2D tColor;",
-	    // "uniform sampler2D tDepth;",
-
-	    // "uniform float maxblur;", // max blur amount
-	    // "uniform float aperture;", // aperture - bigger values for shallower depth of field
-
-	    // "uniform float nearClip;",
-	    // "uniform float farClip;",
-
-	    // "uniform float focus;",
-	    // "uniform float aspect;",
-
-	    "#include <packing>",
 
 	    "float getDepth( const in vec2 screenPosition ) {",
 	    //"	#if DEPTH_PACKING == 1",
@@ -2853,9 +2846,7 @@
 
 	    "void $main(inout vec4 color, vec4 origColor, vec2 uv, float depth) {",
 
-	    "float aspect = resolution.y / resolution.x;",
-
-	    // "vec2 aspectcorrect = vec2( 1.0, dof_aspect );",
+	    "float aspect = resolution.x / resolution.y;",
 	    "vec2 aspectcorrect = vec2( 1.0, aspect );",
 
 	    // "float viewZ = getViewZ( getDepth( vUv ) );", // Original
@@ -2917,9 +2908,6 @@
 	    "col += texture2D( tColor, vUv.xy + ( vec2( -0.29, -0.29 ) * aspectcorrect ) * dofblur4 );",
 	    "col += texture2D( tColor, vUv.xy + ( vec2(  0.0,   0.4  ) * aspectcorrect ) * dofblur4 );",
 
-	    // "gl_FragColor = col / 41.0;",
-	    // "gl_FragColor.a = 1.0;",
-
 	    "color = col / 41.0;",
 	    "color.a = 1.0;",
 
@@ -2935,70 +2923,6 @@
 
 	    "}"
 	  ].join("\n")
-
-	  // https://www.shadertoy.com/view/XdfGDH
-
-	  // fragment:
-	  //   "\n\
-	  // 	\n\
-	  // 	float normpdf(in float x, in float sigma) {\n\
-	  // 		return 0.39894 * exp(-0.5 * x * x / (sigma*sigma) ) / sigma;\n\
-	  // 	}\n\
-	  // 	\n\
-	  // 	void $main(inout vec4 color, vec4 origColor, vec2 uv, float depth) {\n\
-	  // 		// Sample\n\
-	  // 		vec3 colourDiffuse = texture2D(tDiffuse, vUv).xyz;\n\
-	  // 		vec3 colourDepth = texture2D(tDepth, vUv).zyx;\n\
-	  //     \n\
-	  // 		// Depth from Sample Range - TODO Optimise\n\
-	  //     depth = colourDepth.b;\n\
-	  //     if(depth < dof_uBlurNear) { depth = 0.0; }\n\
-	  //     else if(depth > dof_uBlurNear + dof_uBlurRange){ depth = 1.0; }\n\
-	  //     else { depth = (depth - dof_uBlurNear) / dof_uBlurRange; }\n\
-	  //     \n\
-	  // 		// Frag Coordinate\n\
-	  // 		vec2 fragCoord = uv * resolution.xy;\n\
-	  // 		\n\
-	  // 		// Blur\n\
-	  // 		const int mSize = 21; // Blur Size\n\
-	  // 		const int kSize = (mSize-1)/2;\n\
-	  // 		float kernel[mSize];\n\
-	  // 		vec3 colourBlurred = vec3(0.0);\n\
-	  // 		\n\
-	  // 		// Create 1D Blur Kernel\n\
-	  // 		float sigma = 13.0; // Blur Samples\n\
-	  // 		float Z = 0.0;\n\
-	  // 		for (int j = 0; j <= kSize; ++j) {\n\
-	  // 			kernel[kSize+j] = kernel[kSize-j] = normpdf(float(j), sigma);\n\
-	  // 		}\n\
-	  // 		\n\
-	  // 		// Get the normalization factor (as the gaussian has been clamped)\n\
-	  // 		for (int j = 0; j < mSize; ++j) {\n\
-	  // 			Z += kernel[j];\n\
-	  // 		}\n\
-	  // 		\n\
-	  // 		// Read out the texels\n\
-	  // 		for (int i=-kSize; i <= kSize; ++i) {\n\
-	  // 			for (int j=-kSize; j <= kSize; ++j) {\n\
-	  // 				colourBlurred += kernel[kSize + j] * kernel[kSize + i] * texture2D(tDiffuse, (fragCoord.xy + vec2(float(i), float(j)) ) / resolution.xy).rgb;\n\
-	  // 			}\n\
-	  // 		}\n\
-	  // 		\n\
-	  //     colourBlurred /= (Z*Z);\n\
-	  // 		\n\
-	  // 		// Out\n\
-	  //     color = vec4(mix(colourDiffuse, colourBlurred, depth), 1.0);\n\
-	  //     \n\
-	  //     // Dev\n\
-	  // 		// color = vec4(origColor.rgb, 1.0); // Original\n\
-	  // 		// color = vec4(colourDepth.rgb, 1.0); // Depth Texture\n\
-	  //     // color = vec4(0.0, 0.0, colourDepth.b, 1.0); // Depth Texture\n\
-	  // 		// color = vec4(depth, depth, depth, 1.0); // Depth Value\n\
-	  // 		// color = vec4(vUv.x, vUv.y, 0.0, 1.0); // UV\n\
-	  // 		// color = vec4(colourBlurred.rgb, 1.0); // Blurred\n\
-	  // 		// color = vec4(dof_uBlurNear, dof_uBlurNear, dof_uBlurNear, 1.0);\n\
-	  //     // color = vec4(dof_uBlurRange, dof_uBlurRange, dof_uBlurRange, 1.0);\n\
-	  // 	}"
 	});
 
 
